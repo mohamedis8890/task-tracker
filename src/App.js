@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AddTask from "./components/AddTask";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
 
@@ -8,6 +9,8 @@ function App() {
     { id: 2, text: "task 2", day: "Feb 5th at 2:30pm", reminder: false },
     { id: 3, text: "task 3", day: "Feb 5th at 2:30pm", reminder: true },
   ]);
+
+  const [formVisibility, setFormVisibility] = useState(false);
 
   const onDelete = (id) => {
     setTasks(tasks.filter((task) => task.id !== id));
@@ -21,9 +24,20 @@ function App() {
     );
   };
 
+  const submitTask = (newTask) => {
+    const id = Math.floor(Math.random() * 10000) + 1;
+
+    newTask = { id, ...newTask };
+    setTasks([...tasks, newTask]);
+  };
+
   return (
     <div className="container">
-      <Header />
+      <Header
+        setFormVisibility={setFormVisibility}
+        formVisibility={formVisibility}
+      />
+      {formVisibility && <AddTask submitTask={submitTask} />}
       {tasks.length > 0 ? (
         <Tasks
           tasks={tasks}
