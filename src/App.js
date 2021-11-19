@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import About from "./components/About";
 import AddTask from "./components/AddTask";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
+import Footer from "./Footer";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -72,16 +75,29 @@ function App() {
         setFormVisibility={setFormVisibility}
         formVisibility={formVisibility}
       />
-      {formVisibility && <AddTask submitTask={submitTask} />}
-      {tasks.length > 0 ? (
-        <Tasks
-          tasks={tasks}
-          onDelete={onDelete}
-          toggleReminder={toggleReminder}
+
+      <Routes>
+        <Route
+          path="/"
+          exact
+          element={
+            <>
+              {formVisibility && <AddTask submitTask={submitTask} />}
+              {tasks.length > 0 ? (
+                <Tasks
+                  tasks={tasks}
+                  onDelete={onDelete}
+                  toggleReminder={toggleReminder}
+                />
+              ) : (
+                "No Tasks Yet!"
+              )}
+            </>
+          }
         />
-      ) : (
-        "No Tasks Yet!"
-      )}
+        <Route path="/about" element={<About />} />
+      </Routes>
+      <Footer />
     </div>
   );
 }
