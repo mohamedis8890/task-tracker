@@ -75,6 +75,15 @@ body {
   margin-bottom: 40px;
 }
 
+.error {
+  color: darkred;
+  background: bisque;
+  border: 1px solid darkred ;
+  border-radius: 5px;
+  margin: 5px;
+  padding: 5px;
+}
+
 .form-control {
   margin: 20px 0;
 }

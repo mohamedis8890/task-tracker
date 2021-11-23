@@ -8,6 +8,7 @@ import Footer from "./Footer";
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
   const [formVisibility, setFormVisibility] = useState(false);
 
   const baseURL = "http://localhost:5000/tasks";
@@ -22,55 +23,84 @@ function App() {
   }, []);
 
   const fetchTasks = async () => {
-    const res = await fetch(baseURL);
-    const data = await res.json();
-    return data;
+    let data;
+    try {
+      const res = await fetch(baseURL);
+      data = await res.json();
+    } catch (error) {
+      setErrorMessage("Connection Problem or Server Error!");
+      return [];
+    } finally {
+      return data;
+    }
   };
 
   const fetchTask = async (id) => {
-    const res = await fetch(`${baseURL}/${id}`);
-    const data = await res.json();
-    return data;
+    let res;
+    try {
+      res = await fetch(`${baseURL}/${id}`);
+    } catch (error) {
+      return setErrorMessage("Unable to fetch task.");
+    } finally {
+      const data = res && (await res.json());
+      return data;
+    }
   };
 
   const onDelete = async (id) => {
-    await fetch(`${baseURL}/${id}`, { method: "DELETE" });
-    setTasks(tasks.filter((task) => task.id !== id));
+    try {
+      await fetch(`${baseURL}/${id}`, { method: "DELETE" });
+    } catch (error) {
+      return setErrorMessage("Unable to delete task.");
+    } finally {
+      return setTasks(tasks.filter((task) => task.id !== id));
+    }
   };
 
   const toggleReminder = async (id) => {
     const curTask = await fetchTask(id);
     const updTask = { ...curTask, reminder: !curTask.reminder };
-    await fetch(`${baseURL}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(updTask),
-    });
 
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, reminder: !task.reminder } : task
-      )
-    );
+    try {
+      await fetch(`${baseURL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(updTask),
+      });
+    } catch (error) {
+      return setErrorMessage("Unable to toggle reminder.");
+    } finally {
+      setTasks(
+        tasks.map((task) =>
+          task.id === id ? { ...task, reminder: !task.reminder } : task
+        )
+      );
+    }
   };
 
   const submitTask = async (newTask) => {
-    const res = await fetch(baseURL, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(newTask),
-    });
-
-    const data = await res.json();
-    setTasks([...tasks, data]);
+    let res;
+    try {
+      res = await fetch(baseURL, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+    } catch (error) {
+      return setErrorMessage("Unable to save task.");
+    } finally {
+      const data = res && (await res.json());
+      setTasks([...tasks, data]);
+    }
   };
 
   return (
     <div className="container">
+      {errorMessage && <div className="error">{errorMessage}</div>}
       <Header
         setFormVisibility={setFormVisibility}
         formVisibility={formVisibility}
@@ -83,7 +113,7 @@ function App() {
           element={
             <>
               {formVisibility && <AddTask submitTask={submitTask} />}
-              {tasks.length > 0 ? (
+              {tasks?.length > 0 ? (
                 <Tasks
                   tasks={tasks}
                   onDelete={onDelete}
